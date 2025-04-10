@@ -1,4 +1,16 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define g_SIZE 50000000
+
+void randomArray(int *arr, int size)
+{
+	srand(time(NULL));
+	for(int i=0; i < size; ++i) {
+		arr[i] = rand() % 10000000;
+	}
+}
 
 void merge(int arr[], int l, int m, int r)
 {
@@ -6,7 +18,14 @@ void merge(int arr[], int l, int m, int r)
 	int left_half_count = m - l + 1;
 	int right_half_count = r - m;
 
-	int L[left_half_count], R[right_half_count];
+	int *L = malloc(left_half_count * sizeof(int));
+	int *R = malloc(right_half_count * sizeof(int));
+
+	if (L == NULL || R == NULL)
+	{
+		fprintf(stderr, "Memory allocation failed in merge\n");
+		exit(EXIT_FAILURE);
+	}
 
 	for(i=0; i<left_half_count; i++)
 	{
@@ -17,9 +36,7 @@ void merge(int arr[], int l, int m, int r)
 		R[j] = arr[m + 1 + j];
 	}
 
-	i=0;
-	j=0;
-	k=l;
+	i=0; j=0; k=l;
 	while(i < left_half_count && j < right_half_count)
 	{
 		if(L[i] <= R[j])
@@ -48,6 +65,9 @@ void merge(int arr[], int l, int m, int r)
 		j++;
 		k++;
 	}
+
+	free(L);
+	free(R);
 }
 
 void merge_sort(int arr[], int l, int r)
@@ -66,16 +86,24 @@ void merge_sort(int arr[], int l, int r)
 
 int main()
 {
-	int arr[] = { 11, 14, 5, 6, 7 };
-	int arr_size = sizeof(arr) / sizeof(arr[0]);
-
-	merge_sort(arr, 0, arr_size-1);
-
-	int i;
-	for(i=0; i<arr_size; i++)
-	{
-		printf("%d\n", arr[i]);
+	int *arr = malloc(g_SIZE * sizeof(int));
+	if(arr == NULL) {
+		fprintf(stderr, "Memory allocation failed\n");
+		return EXIT_FAILURE;
 	}
+	randomArray(arr, g_SIZE);
+
+	clock_t begin = clock();
+	merge_sort(arr, 0, g_SIZE-1);
+	clock_t end = clock();
+
+	double time_elapsed = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("Elapsed time %f seconds\n", time_elapsed);
+	// int i;
+	// for(i=0; i<g_SIZE; i++)
+	// {
+	// 	printf("%d\n", arr[i]);
+	// }
 
 	return 0;
 }

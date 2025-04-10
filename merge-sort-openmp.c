@@ -3,34 +3,32 @@
 #include <time.h>
 #include <omp.h>
 
-#define SIZE 100
-#define NUM_THREADS 32
+#define g_SIZE 50000000					// array size
+#define g_MAX_THREADS 1000			// the amount of threads
+#define g_MIN_TASK_SIZE 1000		// min size to not use threads
 
-/*
-	in: ptr to an array, size of array
-	out: void
-
-	function that takes in an array and size and generates size random numbers
-	from in between 0 and 999
-*/
 void randomArray(int *arr, int size)
 {
 	srand(time(NULL));
-
-	for(int i=0; i < size; i++)
-	{
-		arr[i] = rand() % 1000;
+	for(int i=0; i < size; i++) {
+		arr[i] = rand() % 10000000;
 	}
 }
 
-// we want to parrallelize the merging process
 void merge(int arr[], int l, int m, int r)
 {
 	int i, j, k;
 	int left_half_count = m - l + 1;
 	int right_half_count = r - m;
 
-	int L[left_half_count], R[right_half_count];
+	int *L = malloc(left_half_count * sizeof(int));
+	int *R = malloc(right_half_count * sizeof(int));
+
+	if (L == NULL || R == NULL)
+	{
+		fprintf(stderr, "Memory allocation failed in merge\n");
+		exit(EXIT_FAILURE);
+	}
 
 	for(i=0; i<left_half_count; i++)
 	{
@@ -41,9 +39,7 @@ void merge(int arr[], int l, int m, int r)
 		R[j] = arr[m + 1 + j];
 	}
 
-	i=0;
-	j=0;
-	k=l;
+	i=0; j=0; k=l;
 	while(i < left_half_count && j < right_half_count)
 	{
 		if(L[i] <= R[j])
@@ -72,6 +68,9 @@ void merge(int arr[], int l, int m, int r)
 		j++;
 		k++;
 	}
+
+	free(L);
+	free(R);
 }
 
 void merge_sort(int arr[], int l, int r)
@@ -79,14 +78,19 @@ void merge_sort(int arr[], int l, int r)
 	if(l < r)
 	{
 		int m = l + (r - l) / 2;
-    
-    #pragma omp task shared(arr)
-		merge_sort(arr, l, m);
 
-    #pragma omp task shared(arr)
-		merge_sort(arr, m+1, r);
+		if ((r - l + 1) <= g_MIN_TASK_SIZE) {
+			merge_sort(arr, l, m);
+			merge_sort(arr, m+1, r);
+		} else {
+			#pragma omp task shared(arr)
+			merge_sort(arr, l, m);
 
-    #pragma omp taskwait
+			#pragma omp task shared(arr)
+			merge_sort(arr, m+1, r);
+
+			#pragma omp taskwait
+		}
 		merge(arr, l, m, r);
 	}
 }
@@ -94,27 +98,34 @@ void merge_sort(int arr[], int l, int r)
 
 int main()
 {
-	// int arr[] = { 11, 14, 5, 6, 7 };
-	// int arr_size = sizeof(arr) / sizeof(arr[0]);
+	int *arr = malloc(g_SIZE * sizeof(int));
+	if(arr == NULL) {
+		fprintf(stderr, "Memory allocation failed\n");
+		return EXIT_FAILURE;
+	}
+	randomArray(arr, g_SIZE);
 
-  // omp_set_num_threads(NUM_THREADS);
+	omp_set_num_threads(g_MAX_THREADS);
 
-  // #pragma omp parallel
-  // {
-  //   #pragma omp single
-  //   {
-  //     merge_sort(arr, 0, arr_size-1);
-  //   }
-  // } 
+	double start_time = omp_get_wtime();
+	#pragma omp parallel
+	{
+		#pragma omp single
+		{
+			merge_sort(arr, 0, g_SIZE - 1);
+		}
+	}
 
-	int *arr = malloc(SIZE * sizeof(int));
-	randomArray(arr, SIZE);
+	double end_time = omp_get_wtime();
+	printf("Elapsed time %f seconds\n", end_time - start_time);
 
+	// if you want to observe output of the sorted array
 	// int i;
-	// for(i=0; i<arr_size; i++)
+	// for(i=0; i<SIZE; i++)
 	// {
 	// 	printf("%d\n", arr[i]);
 	// }
 
+	free(arr);
 	return 0;
 }
