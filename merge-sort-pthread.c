@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 #define g_SIZE 50000000
-#define g_MIN_TASK_SIZE 10000
+#define g_MIN_TASK_SIZE 2000000
 #define g_MAX_DEPTH 16
 
 double time_diff(struct timespec *start, struct timespec *end) {
@@ -157,7 +157,7 @@ int main()
   clock_gettime(CLOCK_MONOTONIC, &end);
 
   double elapsed = time_diff(&start, &end);
-  printf("Elapsed time: %f seconds\n", elapsed);
+	printf("Elapsed time %f seconds | Array Size %d\n", elapsed, g_SIZE);
 
   free(arr);
   return 0;

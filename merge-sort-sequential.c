@@ -85,7 +85,7 @@ int main()
   clock_gettime(CLOCK_MONOTONIC, &end);
 
   double elapsed = time_diff(&start, &end);
-	printf("Elapsed time %f seconds\n", elapsed);
+	printf("Elapsed time %f seconds | Array Size %d\n", elapsed, g_SIZE);
 
 	return 0;
 }
