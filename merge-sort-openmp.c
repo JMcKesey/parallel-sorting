@@ -4,8 +4,8 @@
 #include <omp.h>
 
 #define g_SIZE 50000000					// array size
-#define g_MAX_THREADS 1000			// the amount of threads
-#define g_MIN_TASK_SIZE 1000		// min size to not use threads
+#define g_MAX_THREADS 16			// the amount of threads
+#define g_MIN_TASK_SIZE 10000000		// min size to not use threads
 
 void randomArray(int *arr, int size)
 {
@@ -43,31 +43,14 @@ void merge(int arr[], int l, int m, int r)
 	while(i < left_half_count && j < right_half_count)
 	{
 		if(L[i] <= R[j])
-		{
-			arr[k] = L[i];
-			i++;
-		}
+			arr[k++] = L[i++];
 		else
-		{
-			arr[k] = R[j];
-			j++;
-		}
-		k++;
+			arr[k++] = R[j++];
 	}
-
 	while(i < left_half_count)
-	{
-		arr[k] = L[i];
-		i++;
-		k++;
-	}
-
+		arr[k++] = L[i++];
 	while(j < right_half_count)
-	{
-		arr[k] = R[j];
-		j++;
-		k++;
-	}
+		arr[k++] = R[j++];
 
 	free(L);
 	free(R);
@@ -95,7 +78,6 @@ void merge_sort(int arr[], int l, int r)
 	}
 }
 
-
 int main()
 {
 	int *arr = malloc(g_SIZE * sizeof(int));
@@ -118,13 +100,6 @@ int main()
 
 	double end_time = omp_get_wtime();
 	printf("Elapsed time %f seconds\n", end_time - start_time);
-
-	// if you want to observe output of the sorted array
-	// int i;
-	// for(i=0; i<SIZE; i++)
-	// {
-	// 	printf("%d\n", arr[i]);
-	// }
 
 	free(arr);
 	return 0;

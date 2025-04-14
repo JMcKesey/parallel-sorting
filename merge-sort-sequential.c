@@ -1,8 +1,13 @@
+#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 #define g_SIZE 50000000
+
+double time_diff(struct timespec *start, struct timespec *end) {
+  return (end->tv_sec - start->tv_sec) + (end->tv_nsec - start->tv_nsec) / 1e9;
+}
 
 void randomArray(int *arr, int size)
 {
@@ -40,31 +45,14 @@ void merge(int arr[], int l, int m, int r)
 	while(i < left_half_count && j < right_half_count)
 	{
 		if(L[i] <= R[j])
-		{
-			arr[k] = L[i];
-			i++;
-		}
+			arr[k++] = L[i++];
 		else
-		{
-			arr[k] = R[j];
-			j++;
-		}
-		k++;
+			arr[k++] = R[j++];
 	}
-
 	while(i < left_half_count)
-	{
-		arr[k] = L[i];
-		i++;
-		k++;
-	}
-
+		arr[k++] = L[i++];
 	while(j < right_half_count)
-	{
-		arr[k] = R[j];
-		j++;
-		k++;
-	}
+		arr[k++] = L[j++];
 
 	free(L);
 	free(R);
@@ -78,14 +66,13 @@ void merge_sort(int arr[], int l, int r)
 
 		merge_sort(arr, l, m);
 		merge_sort(arr, m+1, r);
-
 		merge(arr, l, m, r);
 	}
 }
 
-
 int main()
 {
+  struct timespec start, end;
 	int *arr = malloc(g_SIZE * sizeof(int));
 	if(arr == NULL) {
 		fprintf(stderr, "Memory allocation failed\n");
@@ -93,17 +80,12 @@ int main()
 	}
 	randomArray(arr, g_SIZE);
 
-	clock_t begin = clock();
+  clock_gettime(CLOCK_MONOTONIC, &start);
 	merge_sort(arr, 0, g_SIZE-1);
-	clock_t end = clock();
+  clock_gettime(CLOCK_MONOTONIC, &end);
 
-	double time_elapsed = (double)(end - begin) / CLOCKS_PER_SEC;
-	printf("Elapsed time %f seconds\n", time_elapsed);
-	// int i;
-	// for(i=0; i<g_SIZE; i++)
-	// {
-	// 	printf("%d\n", arr[i]);
-	// }
+  double elapsed = time_diff(&start, &end);
+	printf("Elapsed time %f seconds\n", elapsed);
 
 	return 0;
 }
