@@ -4,8 +4,8 @@
 #include <omp.h>
 
 #define g_SIZE 50000000						// array size
-#define g_MAX_THREADS 50			  // the amount of threads
-#define g_MIN_TASK_SIZE 2000000		  // min size to not use threads
+#define g_MAX_THREADS 16			  	// the amount of threads
+#define g_MIN_TASK_SIZE 100000		// min size to not use threads
 
 void randomArray(int *arr, int size)
 {
@@ -99,6 +99,14 @@ int main()
 	}
 
 	double end_time = omp_get_wtime();
+
+	// correctness check
+	// for(int i=1; i<g_SIZE-1; ++i)
+	// {
+	// 	if(arr[i] < arr[i-1]) return EXIT_FAILURE;
+	// 	else if(i==g_SIZE-2) printf("completely correct\n");
+	// }
+
 	printf("Elapsed time %f seconds | Array Size %d\n", end_time - start_time, g_SIZE);
 
 	free(arr);

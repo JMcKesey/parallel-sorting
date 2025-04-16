@@ -5,8 +5,8 @@
 #include <pthread.h>
 
 #define g_SIZE 50000000
-#define g_MIN_TASK_SIZE 2000000
-#define g_MAX_DEPTH 16
+#define g_MIN_TASK_SIZE 100000
+#define g_MAX_DEPTH 5
 
 double time_diff(struct timespec *start, struct timespec *end) {
   return (end->tv_sec - start->tv_sec) + (end->tv_nsec - start->tv_nsec) / 1e9;
@@ -155,6 +155,13 @@ int main()
   clock_gettime(CLOCK_MONOTONIC, &start);
   merge_sort_parallel(params);
   clock_gettime(CLOCK_MONOTONIC, &end);
+
+  // correctness check
+	// for(int i=1; i<g_SIZE-1; ++i)
+	// {
+	// 	if(arr[i] < arr[i-1]) return EXIT_FAILURE;
+	// 	else if(i==g_SIZE-2) printf("completely correct\n");
+	// }
 
   double elapsed = time_diff(&start, &end);
 	printf("Elapsed time %f seconds | Array Size %d\n", elapsed, g_SIZE);

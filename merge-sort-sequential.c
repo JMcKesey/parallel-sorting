@@ -63,7 +63,6 @@ void merge_sort(int arr[], int l, int r)
 	if(l < r)
 	{
 		int m = l + (r - l) / 2;
-
 		merge_sort(arr, l, m);
 		merge_sort(arr, m+1, r);
 		merge(arr, l, m, r);
@@ -83,6 +82,13 @@ int main()
   clock_gettime(CLOCK_MONOTONIC, &start);
 	merge_sort(arr, 0, g_SIZE-1);
   clock_gettime(CLOCK_MONOTONIC, &end);
+
+	// correctness check
+	// for(int i=1; i<g_SIZE-1; ++i)
+	// {
+	// 	if(arr[i] < arr[i-1]) return EXIT_FAILURE;
+	// 	else if(i==g_SIZE-2) printf("completely correct\n");
+	// }
 
   double elapsed = time_diff(&start, &end);
 	printf("Elapsed time %f seconds | Array Size %d\n", elapsed, g_SIZE);
